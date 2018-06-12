@@ -29,7 +29,13 @@ public class MagicController : MonoBehaviour
 
 		var curController = SteamVR_Controller.Input(_controllerID);
 		var trigger = curController.GetAxis(EVRButtonId.k_EButton_SteamVR_Trigger).x;
-		_em.enabled = trigger > .2f;
+		if (trigger > .2f)
+		{
+			_em.enabled = true;
+			SteamVR_Controller.Input(_controllerID).TriggerHapticPulse((ushort)(Time.deltaTime * 10000), EVRButtonId.k_EButton_SteamVR_Trigger);
+		}
+		else
+			_em.enabled = false;
 		if (curController.GetPressUp(EVRButtonId.k_EButton_SteamVR_Trigger))
 		{
 			_canTrigger = true;
