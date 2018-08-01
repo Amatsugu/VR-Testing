@@ -15,14 +15,18 @@ public class MagicController : MonoBehaviour
 	public int _controllerID = 1;
 	public TrailRenderer trail;
 
-	public Color fireColor = new Color(1, 0, 0);
-	public Color airColor = new Color(1, 1, .9f);
-	public Color earthColor = new Color(.4f, .2f, 0);
-	public Color voidColor = new Color(1f, 0, .3f);
-	public Color waterColor = new Color(0, .5f, 1f);
+	public Color[] colors = new[]
+	{
+		new Color(1f, 0, .3f), // Void
+		new Color(0, .5f, 1f), //Water
+		new Color(1, 0, 0), //Fire
+		new Color(1, 1, .9f), //Air
+		new Color(.4f, .2f, 0), //Earth
+	};
+
+	public Transform[] effects = new Transform[5];
 
 	private int _lastSelection;
-	private Color[] _colors;
 	void Start()
 	{
 		_controllerID = SteamVR_Controller.GetDeviceIndex(deviceRelation, ETrackedDeviceClass.Controller);
@@ -30,7 +34,14 @@ public class MagicController : MonoBehaviour
 		_ps = GetComponent<ParticleSystem>();
 		_em = _ps.emission;
 		_particles = new ParticleSystem.Particle[_ps.main.maxParticles];
-		_colors = new[] { voidColor, fireColor, airColor, earthColor, waterColor};
+		foreach(Transform t in effects)
+		{
+			if (t == null)
+				continue;
+			t.gameObject.SetActive(false);
+			t.parent = transform;
+			t.localPosition = Vector3.zero;
+		}
 	}
 
 	void Update()
@@ -71,11 +82,13 @@ public class MagicController : MonoBehaviour
 		angle = (angle == 4) ? 0 : angle;
 		int selection = (length <= .5f) ? 0 : (int)angle + 1;
 		Debug.Log($"{angle} ,{length},  {selection}");
-		trail.startColor = _colors[selection];
-		trail.endColor = _colors[_lastSelection];
+		trail.startColor = colors[selection];
+		trail.endColor = colors[_lastSelection];
 		if (selection != _lastSelection)
 		{
 			curController.TriggerHapticPulse(1000, EVRButtonId.k_EButton_SteamVR_Touchpad);
+			effects[_lastSelection]?.gameObject.SetActive(false);
+			effects[selection]?.gameObject.SetActive(true);
 			_lastSelection = selection;
 		}
 	}
